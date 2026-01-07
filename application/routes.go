@@ -13,7 +13,7 @@ func RegisterRoutes() *chi.Mux {
 	RegisterMiddleware(r)
 	
 	r.Route("/", auth.RegisterRoutes)
-	r.Route("/user", users.RegisterRoutes)
+	r.Route("/users", users.RegisterRoutes)
 	r.Route("/health", health.RegisterRoutes)
 
 	return r

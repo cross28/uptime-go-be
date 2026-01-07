@@ -24,5 +24,5 @@ func (repo *PostgresUserRepository) GetById(id string) (*User, error) {
 
 func (repo *PostgresUserRepository) Create(user *User) (string, error) {
 	// implement db
-	return user.Id, nil
+	return user.Id + "SomeOtherRandomString", nil
 }

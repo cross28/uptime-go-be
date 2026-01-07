@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/redis/go-redis/v9"
 )
 
 type Configuration struct {
@@ -18,6 +19,7 @@ type Configuration struct {
 type App struct {
 	Config Configuration
 	Router *chi.Mux
+	RedisClient *redis.Client
 }
 
 func NewApp() *App {
@@ -30,6 +32,7 @@ func NewApp() *App {
 	return &App{
 		Config: cfg,
 		Router: RegisterRoutes(),
+		RedisClient: redis.NewClient(&redis.Options{}),
 	}
 }
 
@@ -42,11 +45,37 @@ func (a *App) Start(ctx context.Context) error {
 		ReadTimeout: time.Second * 5,
 	}
 
-	err := server.ListenAndServe()
-
+	err := a.RedisClient.Ping(ctx).Err()
 	if err != nil {
-		return fmt.Errorf("failed to start server: %w", err)
+		return fmt.Errorf("failed to start redis: %w", err)
 	}
 
-	return nil
+	defer func() {
+		if err := a.RedisClient.Close(); err != nil {
+			fmt.Println("failed to close redis", err)
+		}
+	}()
+
+	ch := make(chan error, 1)
+
+	go func() {
+		err = server.ListenAndServe()
+		if err != nil {
+			ch <- fmt.Errorf("failed to start server: %w", err)
+		}
+		close(ch)
+	}()
+	
+	ctx.Done()
+	err = <-ch
+
+	select {
+	case err = <-ch:
+		return err
+	case <-ctx.Done():
+		timeout, cancel := context.WithTimeout(context.Background(), time.Second * 10)
+		defer cancel()
+
+		return server.Shutdown(timeout)
+	}
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"os"
+	"os/signal"
 
 	"crosssystems.co/uptime-go-be/application"
 
@@ -12,14 +13,12 @@ import (
 func main() {
 	app := application.NewApp()
 
-	log.SetReportCaller(true)
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
 
 	log.Infof("server starting: port %d | env %s", app.Config.Port, app.Config.Env)
-	err := app.Start(context.TODO())
-
+	err := app.Start(ctx)
 	if err != nil {
 		log.Error(err.Error())
 	}
-
-	os.Exit(1)
 }
