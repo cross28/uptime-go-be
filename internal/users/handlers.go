@@ -7,11 +7,6 @@ import (
 	"github.com/go-chi/chi"
 )
 
-type UserRepository interface {
-	GetById(id string) (*User, error)
-	Create(user *User) (string, error)
-}
-
 // Similar to a primary constructor. This is the idiomatic way to make a constructor
 type UserHandler struct {
 	UserRepo UserRepository

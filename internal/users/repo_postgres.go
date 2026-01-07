@@ -1,11 +1,16 @@
 package users
 
-import "fmt"
+import (
+	"database/sql"
+	"fmt"
+)
 
-type PostgresUserRepository struct {}
+type PostgresUserRepository struct {
+	db *sql.DB
+}
 
-func NewPostgresUserRepository() *PostgresUserRepository {
-	return &PostgresUserRepository{}
+func NewPostgresUserRepository(db *sql.DB) *PostgresUserRepository {
+	return &PostgresUserRepository{db: db}
 }
 
 func (repo *PostgresUserRepository) GetById(id string) (*User, error) {
