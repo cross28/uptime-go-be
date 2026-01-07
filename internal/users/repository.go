@@ -1,22 +1,23 @@
 package users
 
-type IUserRepository interface {
-	GetById(id string) (*User, error)
-	Create(user *User) (string, error)
+import "fmt"
+
+type PostgresUserRepository struct {}
+
+func NewPostgresUserRepository() *PostgresUserRepository {
+	return &PostgresUserRepository{}
 }
 
-type UserRepository struct {}
-
-func NewUserRepository() *UserRepository {
-	return &UserRepository{}
-}
-
-func (repo *UserRepository) GetById(id string) (*User, error) {
+func (repo *PostgresUserRepository) GetById(id string) (*User, error) {
 	// implement db
-	return &User{}, nil
+	return &User{
+		Id: id,
+		Email: fmt.Sprintf("%s@crosssystems.co", id),
+		PasswordHash: "Th!s1sAP4ssw0rdH4sh!!",
+	}, nil
 }
 
-func (repo *UserRepository) Create(user *User) (string, error) {
+func (repo *PostgresUserRepository) Create(user *User) (string, error) {
 	// implement db
-	return "new-id", nil
+	return user.Id, nil
 }

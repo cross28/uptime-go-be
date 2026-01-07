@@ -7,12 +7,17 @@ import (
 	"github.com/go-chi/chi"
 )
 
-// Similar to a primary constructor
-type UserHandler struct {
-	UserRepo IUserRepository
+type UserRepository interface {
+	GetById(id string) (*User, error)
+	Create(user *User) (string, error)
 }
 
-func NewUserHandler(userRepo IUserRepository) *UserHandler {
+// Similar to a primary constructor. This is the idiomatic way to make a constructor
+type UserHandler struct {
+	UserRepo UserRepository
+}
+
+func NewUserHandler(userRepo UserRepository) *UserHandler {
 	return &UserHandler{
 		UserRepo: userRepo,
 	}
