@@ -41,3 +41,14 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{"id": id})
 }
+
+func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
+	users, err := h.UserRepo.GetAllUsers(r.Context())
+	if err != nil {
+		http.Error(w, "Error getting all users", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(users)
+}

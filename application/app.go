@@ -39,11 +39,7 @@ func NewApp() *App {
 	})
 
 	postgresPool, err := NewPostgresConnection(context.Background(), PostgresConfig{
-		Username: os.Getenv("DB_USER"),
-		Password: os.Getenv("DB_PASS"),
-		Port:     os.Getenv("DB_PORT"),
-		Database: os.Getenv("DB_NAME"),
-		Host:     os.Getenv("DB_HOST"),
+		ConnectionString: os.Getenv("POSTGRES_DB"),
 	})
 	if err != nil {
 		os.Exit(1)

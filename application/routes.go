@@ -25,10 +25,11 @@ func (a *App) registerHealthCheckRoute(r chi.Router) {
 
 func (a *App) registerUserRoutes(r chi.Router) {
 	h := &users.UserHandler{
-		UserRepo: users.NewRedisUserRepository(a.RedisClient),
+		UserRepo: users.NewPostgresUserRepository(a.PostgresDb),
 	}
 
 	r.Post("/", h.CreateUser)
+	r.Get("/", h.GetAllUsers)
 	r.Get("/{id}", h.GetUserById)
 }
 

@@ -7,10 +7,14 @@ import (
 
 	"crosssystems.co/uptime-go-be/application"
 
+	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 )
 
 func main() {
+	if err := godotenv.Load(".env"); err != nil {
+		log.Warn("warning: .env file not detected")
+	}
 	app := application.NewApp()
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
