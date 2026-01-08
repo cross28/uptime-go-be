@@ -9,9 +9,9 @@ import (
 
 func RegisterMiddleware(r *chi.Mux) {
 	cors := cors.New(cors.Options{
-		AllowedOrigins: []string { "https://*", "http://*" },
-		AllowedMethods: []string { "GET", "POST", "PUT", "DELETE", "OPTION" },
-		AllowedHeaders: []string { "*" },
+		AllowedOrigins: []string{"https://*", "http://*"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTION"},
+		AllowedHeaders: []string{"*"},
 	})
 
 	r.Use(chi_middleware.Logger)

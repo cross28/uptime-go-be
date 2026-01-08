@@ -12,16 +12,10 @@ type UserHandler struct {
 	UserRepo UserRepository
 }
 
-func NewUserHandler(userRepo UserRepository) *UserHandler {
-	return &UserHandler{
-		UserRepo: userRepo,
-	}
-}
-
-func (h *UserHandler) getUserById(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
-	user, err := h.UserRepo.GetById(id)
+	user, err := h.UserRepo.GetById(r.Context(), id)
 	if err != nil {
 		http.Error(w, "User not found", http.StatusNotFound)
 		return
@@ -31,14 +25,14 @@ func (h *UserHandler) getUserById(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
-func (h *UserHandler) createUser(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
-	id, err := h.UserRepo.Create(&user)
+	id, err := h.UserRepo.Create(r.Context(), &user)
 	if err != nil {
 		http.Error(w, "Failed to create user", http.StatusInternalServerError)
 		return
