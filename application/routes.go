@@ -1,8 +1,8 @@
 package application
 
 import (
-	"crosssystems.co/uptime-go-be/internal/auth/login"
 	"crosssystems.co/uptime-go-be/internal/health"
+	"crosssystems.co/uptime-go-be/internal/login"
 	"crosssystems.co/uptime-go-be/internal/users"
 	"github.com/go-chi/chi"
 )
@@ -12,7 +12,7 @@ func (a *App) RegisterRoutes() {
 
 	RegisterMiddleware(r)
 
-	r.Route("/", a.registerAuthRoutes)
+	r.Route("/auth", a.registerAuthRoutes)
 	r.Route("/users", a.registerUserRoutes)
 	r.Route("/health", a.registerHealthCheckRoute)
 
@@ -34,6 +34,9 @@ func (a *App) registerUserRoutes(r chi.Router) {
 }
 
 func (a *App) registerAuthRoutes(r chi.Router) {
-	// TODO: FIX THIS INTO ITS OWN HANDLER
-	r.Post("/login", login.Login)
+	loginHandler := &login.LoginHandler{
+		LoginRepo: login.NewPostgresLoginRepo(a.PostgresDb),
+	}
+
+	r.Post("/login", loginHandler.Login)
 }

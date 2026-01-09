@@ -1,5 +1,9 @@
 CREATE TABLE IF NOT EXISTS Users (
-    Id SERIAL PRIMARY KEY,
-    Email VARCHAR(40) NOT NULL,
-    PasswordHash VARCHAR(30) NOT NULL
-)
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    email VARCHAR(320) NOT NULL,
+    password_hash TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE UNIQUE Index users_emails_unique
+ON Users (LOWER(email));
