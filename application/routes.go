@@ -3,6 +3,7 @@ package application
 import (
 	"crosssystems.co/uptime-go-be/internal/health"
 	"crosssystems.co/uptime-go-be/internal/login"
+	"crosssystems.co/uptime-go-be/internal/register"
 	"crosssystems.co/uptime-go-be/internal/users"
 	"github.com/go-chi/chi"
 )
@@ -38,5 +39,10 @@ func (a *App) registerAuthRoutes(r chi.Router) {
 		LoginRepo: login.NewPostgresLoginRepo(a.PostgresDb),
 	}
 
+	registerHandler := &register.RegisterHandler{
+		RegistrationRepo: register.NewPostgresRegisterRepo(a.PostgresDb),
+	}
+
 	r.Post("/login", loginHandler.Login)
+	r.Post("/register", registerHandler.Register)
 }
