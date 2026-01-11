@@ -17,20 +17,28 @@ func NewPostgresLoginRepo(db *pgxpool.Pool) *PostgresLoginRepo {
 	return &PostgresLoginRepo{db: db}
 }
 
-func (repo *PostgresLoginRepo) GetPasswordHash(ctx context.Context, email string) (string, error) {
+func (repo *PostgresLoginRepo) GetUserByEmail(ctx context.Context, email string) (UserLogin, error) {
 	sql := `
-		SELECT password_hash
+		SELECT id, email, password_hash
 		FROM public.users
 		WHERE email=$1
 	`
 
-	var password_hash string
-	err := repo.db.QueryRow(ctx, sql, email).Scan(&password_hash)
+	rows, err := repo.db.Query(ctx, sql, email)
+
 	if errors.Is(err, pgx.ErrNoRows){
-		return "", err
+		return UserLogin{}, err
 	} else if err != nil {
-		return "", fmt.Errorf("failed to retrieve hash: %w", err)
+		return UserLogin{}, fmt.Errorf("failed to retrieve hash: %w", err)
 	}
 
-	return password_hash, nil
+	defer rows.Close()
+
+
+	user, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[UserLogin])
+	if err != nil {
+		return UserLogin{}, err
+	}
+
+	return user, nil
 }

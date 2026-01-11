@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"time"
 
 	"crosssystems.co/uptime-go-be/auth"
 	"github.com/jackc/pgx/v5"
@@ -25,7 +26,7 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	password_hash, err := h.LoginRepo.GetPasswordHash(r.Context(), login.Email)
+	user_login, err := h.LoginRepo.GetUserByEmail(r.Context(), login.Email)
 
 	if errors.Is(err, pgx.ErrNoRows) {
 		http.Error(w, "Email not found", http.StatusBadRequest)
@@ -35,11 +36,30 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	match := auth.VerifyPassword(login.Password, password_hash)
+	match := auth.VerifyPassword(login.Password, user_login.PasswordHash)
 	if !match {
-		http.Error(w, "Email or password incorrect", http.StatusBadRequest)
+		http.Error(w, "Email or password incorrect", http.StatusUnauthorized)
 		return
 	}
 
+	token, err := auth.CreateJwtToken(user_login.Id)
+	if err != nil {
+		http.Error(w, "Error creating jwt", http.StatusInternalServerError)
+		return
+	}
+
+	cookie := &http.Cookie{
+		Name: "access_token",
+		Value: token,
+		Expires: time.Now().Add(time.Hour * 1),
+		HttpOnly: true,
+		Secure: true,
+		Path: "/",
+		SameSite: http.SameSiteLaxMode,
+	}
+
+	http.SetCookie(w, cookie)
+
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Login success"))
 }
