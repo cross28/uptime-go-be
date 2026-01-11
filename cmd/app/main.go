@@ -2,27 +2,32 @@ package main
 
 import (
 	"context"
+	"log/slog"
 	"os"
 	"os/signal"
+	"strconv"
 
 	"crosssystems.co/uptime-go-be/application"
 
 	"github.com/joho/godotenv"
-	log "github.com/sirupsen/logrus"
 )
 
 func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	slog.SetDefault(logger)
+
 	if err := godotenv.Load(".env"); err != nil {
-		log.Warn("warning: .env file not detected")
+		slog.Warn("warning: .env file not detected")
 	}
+
 	app := application.NewApp()
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	log.Infof("server starting: port %d | env %s", app.Config.Port, app.Config.Env)
+	slog.Info("server starting: port %d | env %s", strconv.Itoa(app.Config.Port), app.Config.Env)
 	err := app.Start(ctx)
 	if err != nil {
-		log.Error(err.Error())
+		slog.Error(err.Error())
 	}
 }

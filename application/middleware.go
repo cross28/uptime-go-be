@@ -17,6 +17,8 @@ func RegisterMiddleware(r *chi.Mux) {
 	r.Use(chi_middleware.Logger)
 	r.Use(chi_middleware.StripSlashes)
 	r.Use(chi_middleware.RequestID)
+	r.Use(chi_middleware.RealIP)
+	r.Use(chi_middleware.Recoverer)
 	r.Use(middleware.JsonContentType)
 	r.Use(cors.Handler)
 }
