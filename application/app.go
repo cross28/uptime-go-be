@@ -8,6 +8,9 @@ import (
 	"os"
 	"time"
 
+	"crosssystems.co/uptime-go-be/internal/login"
+	"crosssystems.co/uptime-go-be/internal/register"
+	"crosssystems.co/uptime-go-be/internal/users"
 	"github.com/go-chi/chi"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
@@ -23,6 +26,10 @@ type App struct {
 	Router      *chi.Mux
 	RedisClient *redis.Client
 	PostgresDb  *pgxpool.Pool
+
+	UserHandler *users.UserHandler
+	LoginHandler *login.LoginHandler
+	RegisterHandler *register.RegisterHandler
 }
 
 func NewApp() *App {
@@ -52,8 +59,19 @@ func NewApp() *App {
 	}
 }
 
+func (a *App) InitHandlers() {
+	userRepo := users.NewPostgresUserRepository(a.PostgresDb)
+	loginRepo := login.NewPostgresLoginRepo(a.PostgresDb)
+	registerRepo := register.NewPostgresRegisterRepo(a.PostgresDb)
+
+	a.UserHandler = &users.UserHandler{UserRepo: userRepo}
+	a.LoginHandler = &login.LoginHandler{LoginRepo: loginRepo}
+	a.RegisterHandler = &register.RegisterHandler{RegistrationRepo: registerRepo}
+}
+
 func (a *App) Start(ctx context.Context) error {
 	a.RegisterRoutes()
+	a.InitHandlers()
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", a.Config.Port),

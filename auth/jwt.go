@@ -20,12 +20,30 @@ type UserClaims struct {
 
 
 func CreateJwtToken(user_id string) (string, error) {
-	var secretKey = []byte(os.Getenv("JWT_SECRET_KEY"))
+	secretKey := []byte(os.Getenv("JWT_SECRET_KEY"))
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, 
 		jwt.MapClaims{
 			"sub": user_id,
 			"exp": time.Now().Add(time.Hour * 1).Unix(),
+		})
+
+	tokenString, err := token.SignedString(secretKey)
+
+	if err != nil {
+		return "", fmt.Errorf("error creating jwt: %v", err)
+	}
+
+	return tokenString, nil
+}
+
+func CreateRefreshToken(user_id string) (string, error) {
+	secretKey := []byte(os.Getenv("JWT_SECRET_KEY"))
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, 
+		jwt.MapClaims{
+			"sub": user_id,
+			"exp": time.Now().Add(time.Hour * 24 * 7).Unix(), // 7 days
 		})
 
 	tokenString, err := token.SignedString(secretKey)

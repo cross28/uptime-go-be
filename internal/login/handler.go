@@ -42,15 +42,21 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := auth.CreateJwtToken(user_login.Id)
+	access_token, err := auth.CreateJwtToken(user_login.Id)
 	if err != nil {
 		http.Error(w, "Error creating jwt", http.StatusInternalServerError)
 		return
 	}
 
-	cookie := &http.Cookie{
+	refresh_token, err := auth.CreateRefreshToken(user_login.Id)
+	if err != nil {
+		http.Error(w, "error creating refresh jwt", http.StatusInternalServerError)
+		return
+	}
+
+	access_token_cookie := &http.Cookie{
 		Name: "access_token",
-		Value: token,
+		Value: access_token,
 		Expires: time.Now().Add(time.Hour * 1),
 		HttpOnly: true,
 		Secure: true,
@@ -58,7 +64,18 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteLaxMode,
 	}
 
-	http.SetCookie(w, cookie)
+	refresh_token_cookie := &http.Cookie{
+		Name: "refresh_token",
+		Value: refresh_token,
+		Expires: time.Now().Add(time.Hour * 24 * 7),
+		HttpOnly: true,
+		Secure: true,
+		Path: "/",
+		SameSite: http.SameSiteLaxMode,
+	}
+
+	http.SetCookie(w, access_token_cookie)
+	http.SetCookie(w, refresh_token_cookie)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Login success"))
